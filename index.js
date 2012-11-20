@@ -1,5 +1,4 @@
-var Stream = require('stream')
-var inherits = require('util').inherits
+var through = require('through')
 
 var lengths = {
   'UInt8' : 1,
@@ -22,64 +21,60 @@ module.exports = function (opts) {
 }
 
 function split(opts) {
-  if (!(this instanceof split)) return new split(opts)
+  var type = opts.type
+  var offset = opts.offset
+  var modifier = opts.modifier
 
-  Stream.call(this)
-  this.readable = this.writable = true
+  var length = 0
+  var current = 0
 
-  this.type = opts.type
-  this.offset = opts.offset
-  this.modifier = opts.modifier
+  var buf = null
 
-  this.length = 0
-  this.current = 0
+  var lengthParsed = false
 
-  this.buf = null
+  // Performance
+  var oldData, remaining, n
 
-  this.lengthParsed = false
-}
+  var tr = through(function (data) {
+    if (!lengthParsed) {
+      if (buf) {
+        oldData = data
+        data = new Buffer(buf.length + oldData.length)
+        buf.copy(data)
+        oldData.copy(data, buf.length)
+        buf = null
+      }
 
-inherits(split, Stream)
+      if (data.length < offset + lengths[type]) return buf = data
 
-split.prototype.write = function (data) {
-  if (!this.lengthParsed) {
-    if (this.buf) {
-      var oldData = data
-      var data = new Buffer(this.buf.length + oldData.length)
-      this.buf.copy(data)
-      oldData.copy(data, this.buf.length)
-      this.buf = null
+      length = data['read' + type](offset)
+      if (modifier) length = modifier(length)
+      lengthParsed = true
     }
 
-    if (data.length < this.offset + lengths[this.type]) return this.buf = data
+    if (!buf) buf = new Buffer(length)
 
-    this.length = data['read' + this.type](this.offset)
-    if (this.modifier) this.length = this.modifier(this.length)
-    this.lengthParsed = true
+    remaining = length - current
+    n = remaining > data.length
+      ? data.length
+      : remaining
+
+    data.copy(buf, current, 0, n)
+    current += n
+
+    if (current == length) {
+      this.emit('data', buf)
+      reset()
+    }
+
+    if (data.length - n) this.write(data.slice(n))
+  })
+
+  function reset () {
+    lengthParsed = false
+    current = 0
+    buf = null
   }
 
-  if (!this.buf) this.buf = new Buffer(this.length)
-
-  var remaining = this.length - this.current
-  //var n = Math.min(data.length, remaining) 
-  var n = remaining > data.length
-    ? data.length
-    : remaining
-
-  data.copy(this.buf, this.current, 0, n)
-  this.current += n
-
-  if (this.current == this.length) {
-    this.emit('data', this.buf)
-    this.reset()
-  }
-
-  if (data.length - n) this.write(data.slice(n))
+  return tr
 }
-
-split.prototype.reset = function () {
-  this.lengthParsed = false
-  this.current = 0
-  this.buf = null
-}
-

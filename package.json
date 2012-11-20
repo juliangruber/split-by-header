@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "Split binary streams by length fields in messages' headers",
   "main": "index.js",
+  "dependencies": {
+    "through": "~1.1.0"
+  },
   "devDependencies": {
     "macgyver": "~1.6.3"
   },
