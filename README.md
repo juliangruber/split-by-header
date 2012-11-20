@@ -1,7 +1,10 @@
 
 # split-by-header
 
-Split binary streams by length fields in messages' headers
+Split binary streams by length fields in messages' headers.
+
+Use this for example to parse streaming data without writing a streaming parser
+if your chunks are reasonably small.
 
 ## Usage
 
