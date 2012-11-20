@@ -1,0 +1,25 @@
+{
+  "name": "split-by-header",
+  "version": "0.0.0",
+  "description": "Split binary streams by length fields in messages' headers",
+  "main": "index.js",
+  "devDependencies": {
+    "macgyver": "~1.6.3"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/juliangruber/split-by-header.git"
+  },
+  "keywords": [
+    "split",
+    "binary",
+    "header",
+    "length",
+    "stream"
+  ],
+  "author": "Julian Gruber <julian@juliangruber.com>",
+  "license": "MIT"
+}
