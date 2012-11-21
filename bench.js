@@ -15,4 +15,9 @@ for (var i = 0; i < times; i++) {
   splitter.write(buf)
 }
 
-console.log(Date.now() - start + ' ms')
+var duration = Date.now() - start
+console.log(
+  duration + ' ms (' +
+  Math.round(times*length / duration * 1000 / 1024 / 1024)
+  + ' mb/s)'
+)
