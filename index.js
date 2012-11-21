@@ -38,10 +38,7 @@ function split(opts) {
   var tr = through(function (data) {
     if (!lengthParsed) {
       if (buf) {
-        oldData = data
-        data = new Buffer(buf.length + oldData.length)
-        buf.copy(data)
-        oldData.copy(data, buf.length)
+        data = concat(buf, data)
         buf = null
       }
 
@@ -77,4 +74,11 @@ function split(opts) {
   }
 
   return tr
+}
+
+function concat (buf1, buf2) {
+  var data = new Buffer(buf1.length + buf2.length)
+  buf1.copy(data)
+  buf2.copy(data, buf1.length)
+  return data
 }
