@@ -1,4 +1,3 @@
-
 # split-by-header
 
 Split binary streams by length fields in messages' headers.
@@ -12,7 +11,7 @@ if your chunks are reasonably small.
 var split = require('split-by-header')
 
 binaryStream
-  .pipe(split({ type : 'UInt24BE', offset : 1 }))
+  .pipe(split({ type : 'UInt16BE', offset : 1 }))
   .pipe(process.stdout)
 ```
 
@@ -22,14 +21,14 @@ binaryStream
 
 `cfg` can be an object with those fields:
 
-* `type`: Type of the length value. Supported are {8,16,24,32} bit (un)signed integers in BE & LE. See [node api](http://nodejs.org/api/buffer.html)
+* `type`: Type of the length value. Supported are {8,16,32} bit (un)signed integers in BE & LE. See [node api](http://nodejs.org/api/buffer.html)
 * `offset`: Position to start reading from (optional)
 * `modifier`: the real length is returned by the modifier (optional)
 
 If `cfg` is a string, it sets `cfg.type`:
 
 ```js
-split('UInt24BE')
+split('UInt16BE')
 ```
 
 ## License
