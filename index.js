@@ -44,7 +44,9 @@ function split(type) {
     }
 
     if (offset !== chunk.length) {
-      buf = chunk.slice(offset);
+      var dif = Math.abs(chunk.length - offset);
+      buf = new Buffer(dif);
+      chunk.copy(buf, 0, chunk.length - dif);
     }
     offset = 0;
   });

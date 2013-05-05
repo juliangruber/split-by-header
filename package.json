@@ -1,6 +1,6 @@
 {
   "name": "split-by-header",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Split binary streams by length fields in messages' headers",
   "main": "index.js",
   "dependencies": {
