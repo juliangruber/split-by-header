@@ -8,28 +8,23 @@ if your chunks are reasonably small.
 ## Usage
 
 ```js
-var split = require('split-by-header')
+var split = require('split-by-header');
 
-binaryStream
-  .pipe(split({ type : 'UInt16BE', offset : 1 }))
-  .pipe(process.stdout)
+// The header is a one byte int
+var splitter = split('UInt8');
+
+splitter.on('data', console.log);
+// => <Buffer 01 01>>
+
+splitter.write(new Buffer([3, 1, 1]));
 ```
 
 ## API
 
-### split(cfg)
+### split(type)
 
-`cfg` can be an object with those fields:
-
-* `type`: Type of the length value. Supported are {8,16,32} bit (un)signed integers in BE & LE. See [node api](http://nodejs.org/api/buffer.html)
-* `offset`: Position to start reading from (optional)
-* `modifier`: the real length is returned by the modifier (optional)
-
-If `cfg` is a string, it sets `cfg.type`:
-
-```js
-split('UInt16BE')
-```
+Supported types are are {8,16,32} bit (un)signed integers in BE & LE. See [node api](http://nodejs.org/api/buffer.html)
+Just leave away the `read` from the node core method.
 
 ## License
 

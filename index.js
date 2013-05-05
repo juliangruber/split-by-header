@@ -1,4 +1,4 @@
-var through = require('through')
+var through = require('through');
 
 var lengths = {
   'UInt8' : 1,
@@ -11,74 +11,43 @@ var lengths = {
   'Int32BE' : 4,
   'Int32LE' : 4,
   'UInt32BE' : 4
-}
+};
 
-module.exports = function (opts) {
-  if (typeof opts == 'string') opts = { type : opts }
-  if (!opts || !opts.type) throw new Error('no type provided')
-  if (typeof opts.offset != 'number') opts.offset = 0
-  return split(opts)
-}
+module.exports = split;
 
-function split(opts) {
-  var type = opts.type
-  var offset = opts.offset
-  var modifier = opts.modifier
+function split(type) {
+  var headerLength = lengths[type];
+  var buf = null;
+  var offset = 0;
+  var frameLength = null;
 
-  var length = 0
-  var current = 0
+  var tr = through(function (chunk) {
+    if (buf) {
+      chunk = Buffer.concat([buf, chunk]);
+      buf = null;
+    }
 
-  var buf = null
-
-  var lengthParsed = false
-
-  // Performance
-  var oldData, remaining, n
-
-  var tr = through(function (data) {
-    if (!lengthParsed) {
-      if (buf) {
-        data = concat(buf, data)
-        buf = null
+    while (true) {
+      if (frameLength === null) {
+        if (chunk.length < offset + headerLength) break;
+        frameLength = chunk['read' + type](offset);
+        offset += headerLength;
       }
+    
+      var frameEnd = offset - headerLength + frameLength;
+      if (chunk.length < frameEnd) break;
 
-      if (data.length < offset + lengths[type]) return buf = data
+      this.queue(chunk.slice(offset, frameEnd));
+      offset = frameEnd;
 
-      length = data['read' + type](offset)
-      if (modifier) length = modifier(length)
-      lengthParsed = true
+      frameLength = null;
     }
 
-    if (!buf) buf = new Buffer(length)
-
-    remaining = length - current
-    n = remaining > data.length
-      ? data.length
-      : remaining
-
-    data.copy(buf, current, 0, n)
-    current += n
-
-    if (current == length) {
-      this.emit('data', buf)
-      reset()
+    if (offset !== chunk.length) {
+      buf = chunk.slice(offset);
     }
+    offset = 0;
+  });
 
-    if (data.length - n) this.write(data.slice(n))
-  })
-
-  function reset () {
-    lengthParsed = false
-    current = 0
-    buf = null
-  }
-
-  return tr
-}
-
-function concat (buf1, buf2) {
-  var data = new Buffer(buf1.length + buf2.length)
-  buf1.copy(data)
-  buf2.copy(data, buf1.length)
-  return data
+  return tr;
 }
