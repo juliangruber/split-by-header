@@ -45,8 +45,7 @@ function split(type) {
 
     if (offset !== chunk.length) {
       var dif = Math.abs(chunk.length - offset);
-      buf = new Buffer(dif);
-      chunk.copy(buf, 0, chunk.length - dif);
+      buf = chunk.slice(chunk.length - dif, chunk.length);
     }
     offset = 0;
   });
